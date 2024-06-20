@@ -1,0 +1,37 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.NUMERIC_STD.ALL;
+
+library UNISIM;
+use UNISIM.VComponents.all;
+use IEEE.STD_LOGIC_unsigned.ALL;
+use IEEE.STD_LOGIC_arith.ALL;
+
+entity freqdiv2 is
+port( board_clk: in std_logic;
+		clk10 : out std_logic);
+end freqdiv2;
+
+architecture Behavioral of freqdiv2 is
+
+begin
+
+freqdivision: process(board_clk)
+
+variable count: integer range 0 to 1249997 := 0;
+begin
+	if rising_edge(board_clk) then
+		count := count + 1;
+		if count = 1249997 then 
+			clk10 <= '1';
+			count := 0;
+		else 
+			clk10 <= '0';
+		end if;
+	end if;
+end process;
+			
+end Behavioral;
+
+
+
