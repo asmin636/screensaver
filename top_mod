@@ -1,0 +1,102 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+
+use IEEE.NUMERIC_STD.ALL;
+
+library UNISIM;
+use UNISIM.VComponents.all;
+
+entity top_mod is
+port( board_clk : in std_logic;
+		vsync : out std_logic;
+		hsync : out std_logic;
+		red : out std_logic_vector(2 downto 0);
+		green : out std_logic_vector(2 downto 0);
+		blue : out std_logic_vector(1 downto 0));
+end top_mod;
+
+architecture Behavioral of top_mod is
+
+component square_pos is
+PORT( board_clk : in std_logic;
+			enable : in std_logic;
+			color : out std_logic_vector(7 downto 0);
+			square_x : out integer range 0 to 639;
+			square_y : out integer range 0 to 479);
+end component;
+
+component vga_driver is 
+PORT(
+    clk : IN   STD_LOGIC;    
+    h_sync    : OUT  STD_LOGIC;  
+    v_sync    : OUT  STD_LOGIC;  
+    display_en  : OUT  STD_LOGIC;  
+    x : out  INTEGER;    
+    y : out  INTEGER);
+end component;
+
+component freqdiv is
+port ( clk : in    std_logic; 
+          CEO : out   std_logic; 
+          Q0  : out   std_logic; 
+          Q1  : out   std_logic; 
+          TC  : out   std_logic);
+end component;
+
+component freqdiv2 is
+port( board_clk: in std_logic;
+		clk10 : out std_logic);
+end component;
+
+signal col: std_logic_vector(7 downto 0);
+signal x_pos, y_pos: integer;
+signal sq_x: integer range 0 to 639;
+signal sq_y: integer range 0 to 479;
+signal d_en : std_logic;
+signal en, clk, hs, vs, sig1, sig2, sig3  : std_logic;
+signal red_sq, green_sq : std_logic_vector(2 downto 0);
+signal blue_sq: std_logic_vector( 1 downto 0); 
+begin
+
+freqd1: freqdiv port map(board_clk, sig1, sig2, sig3, clk);
+freqd2 : freqdiv2 port map(board_clk, en);
+
+square_position : square_pos port map( board_clk, en, col, sq_x, sq_y);
+vga : vga_driver port map( clk, hs, vs, d_en, x_pos, y_pos);
+
+colorsquare : process(board_clk)
+
+
+begin
+
+
+
+if ((y_pos > sq_y) and (y_pos < (sq_y + 50)) and (x_pos > sq_x ) and (x_pos < (sq_x + 50))) then
+	red_sq <= col(7 downto 5);
+	green_sq <= col(4 downto 2);
+	blue_sq <= col(1 downto 0);
+else 
+	red_sq <= "000";
+	green_sq <= "000";
+	blue_sq <= "00";
+end if;
+
+if (d_en = '1') then
+	red <= red_sq ;
+	green <= green_sq ;
+	blue  <= blue_sq ;
+else
+	red <= "000";
+	green <= "000";
+	blue <= "00";
+end if;
+
+hsync <= hs;
+vsync <= vs;
+
+end process;
+    
+
+
+end Behavioral;
+
