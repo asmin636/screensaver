@@ -1,0 +1,91 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+
+use IEEE.NUMERIC_STD.ALL;
+
+library UNISIM;
+use UNISIM.VComponents.all;
+use IEEE.STD_LOGIC_unsigned.ALL;
+use IEEE.STD_LOGIC_arith.ALL;
+
+entity square_pos is
+	PORT( board_clk : in std_logic;
+			enable : in std_logic;
+			color : out std_logic_vector(7 downto 0);
+			square_x : out integer range 0 to 639;
+			square_y : out integer range 0 to 479);
+end square_pos;
+
+architecture Behavioral of square_pos is
+
+signal x : integer range 0 to 639 := 0;
+signal y : integer range 0 to 479 := 0;
+signal c : std_logic_vector(7 downto 0):= (others => '0');
+
+begin
+
+	moving_square : process(board_clk, enable)
+
+	variable direction: integer range 0 to 3:= 0;
+	-- 0 down right, 1 down left, 2 up right, 3 up left 
+
+	begin
+		if rising_edge(board_clk) then
+			if enable = '1' then
+				c <= c + 1;
+				if direction = 0 then
+						x <= x + 1;
+						y <= y + 1;
+						if x = 539 then
+							direction := 1;
+						elsif y = 429 then
+							direction := 2;
+						elsif x = 539 and y = 429 then
+							direction := 3;
+						end if;
+				elsif direction = 1 then
+						x <= x - 1;
+						y <= y + 1;
+						if x = 0 then
+							direction := 0;
+						elsif y = 429 then
+							direction := 3;
+						elsif x = 0 and y = 429 then
+							direction := 2;
+						end if;
+				elsif direction = 2 then
+						x <= x + 1;
+						y <= y - 1;
+						if x = 539 then
+							direction := 3;
+						elsif y = 0 then
+							direction := 0;
+						elsif x = 539 and y = 0 then
+							direction := 1;
+						end if;
+				elsif direction = 3 then
+						x <= x - 1;
+						y <= y - 1;
+						if x = 0 then
+							direction := 2;
+						elsif y = 0 then
+							direction := 1;
+						elsif x = 0 and y = 0 then
+							direction := 0;
+						end if;
+				else
+                        direction := 0;
+                        x <= 0;
+                        y <= 0;
+				end if;
+			end if;
+		end if;
+		square_x <= x;
+		square_y <= y;
+		color <= c;
+		
+	end process moving_square;
+				
+	
+end Behavioral;
+
